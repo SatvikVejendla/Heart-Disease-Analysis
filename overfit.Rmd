@@ -1,0 +1,71 @@
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(rjson)
+library(gridExtra)
+
+library(reticulate)
+```
+
+
+```{r}
+history <- read_csv("model/overfit/history.csv")
+```
+
+```{r}
+np <- import("numpy")
+
+confusion_matrix <- np$load("model/overfit/confusion_matrix.npy")
+
+confusion_df <- data.frame(Predicted=c("True", "False", "True", "False"), Actual=c("True", "True", "False", "False"), Value=c(confusion_matrix[1], confusion_matrix[2], confusion_matrix[3], confusion_matrix[4]))
+
+confusion_plot <- ggplot(data=confusion_df, aes(x=Actual, y=Predicted, fill=Value)) +
+        geom_tile() +
+        geom_text(aes(label=Value), color="white", size=10) +
+        scale_x_discrete(limits = rev)
+confusion_plot
+```
+
+```{r}
+
+loss <- ggplot(data=history, aes(x=as.numeric(row.names(history)), y=loss)) +
+            geom_point() +
+            geom_line() +
+            ggtitle("Accuracy vs. Epoch") +
+            xlab("Epoch") +
+            ylab("Accuracy")
+loss
+```
+
+```{r}
+accuracy <- ggplot(data=history, aes(x=as.numeric(row.names(history)), y=accuracy)) +
+            geom_point() +
+            geom_line() +
+            ggtitle("Accuracy vs. Epoch") +
+            xlab("Epoch") +
+            ylab("Accuracy")
+accuracy
+```
+
+```{r}
+grid.arrange(loss, accuracy, confusion_plot, nrow=2, ncol=2)
+```
+
+```{r}
+
+results <- fromJSON(file="model/overfit/results.json")
+print(paste("Uncleaned Model Accuracy:", results["accuracy"]))
+print(paste("Uncleaned Model Loss:", results["loss"]))
+```
+
+
+```{r}
+ggsave(filename="model/overfit/plots/loss.png", plot=loss)
+ggsave(filename="model/overfit/plots/accuracy.png", plot=accuracy)
+```
+

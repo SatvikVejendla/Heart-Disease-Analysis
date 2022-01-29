@@ -1,0 +1,54 @@
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(rjson)
+library(gridExtra)
+```
+
+
+```{r}
+uncleaned_history <- read_csv("model/uncleaned/history.csv")
+```
+
+```{r}
+loss <- ggplot(data=uncleaned_history, aes(x=as.numeric(row.names(uncleaned_history)), y=loss)) +
+            geom_point() +
+            geom_line() +
+            ggtitle("Loss vs. Epoch") +
+            xlab("Epoch") +
+            ylab("Loss")
+loss
+```
+
+```{r}
+accuracy <- ggplot(data=uncleaned_history, aes(x=as.numeric(row.names(uncleaned_history)), y=binary_accuracy)) +
+            geom_point() +
+            geom_line() +
+            ggtitle("Accuracy vs. Epoch") +
+            xlab("Epoch") +
+            ylab("Accuracy")
+accuracy
+```
+
+```{r}
+grid.arrange(loss, accuracy, nrow=2, ncol=1)
+```
+
+```{r}
+
+results <- fromJSON(file="model/uncleaned/results.json")
+print(paste("Uncleaned Model Accuracy:", results["accuracy"]))
+print(paste("Uncleaned Model Loss:", results["loss"]))
+```
+
+
+```{r}
+ggsave(filename="model/uncleaned/plots/loss.png", plot=loss)
+ggsave(filename="model/uncleaned/plots/accuracy.png", plot=accuracy)
+```
+

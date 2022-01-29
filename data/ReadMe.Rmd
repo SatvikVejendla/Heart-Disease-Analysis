@@ -1,0 +1,1 @@
+The data files were ignored when pushing to github since they are unnecessary to the purpose of this project. The entire dataset can be found in Kaggle.

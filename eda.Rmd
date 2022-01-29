@@ -1,0 +1,193 @@
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(gridExtra)
+```
+
+
+```{r}
+df <- read_csv("data/heart.csv")
+```
+
+```{r}
+head(df)
+```
+
+
+```{r}
+summary(df)
+```
+
+```{r}
+paste("NA Values:", sum(is.na(df)))
+paste("Duplicate Values:", sum(duplicated(df)))
+```
+
+
+
+```{r}
+### Continuous Attributes
+# trtbps
+# chol
+# thalach
+# age
+
+
+# Viewing the Box Plots of these attributes to determine if outliers exist
+
+par(mfrow=c(2,2))
+
+par(mar=c(1,3,1,1))
+values = c("age", "chol", "trtbps", "thalachh")
+
+
+for(name in values){
+        value <- df[name]
+        boxplot(value)
+        stripchart(value, vertical=TRUE, col="blue", add=TRUE, pch = 20, method="jitter")
+}
+
+par(mfrow=c(1,1))
+
+# Based on the results, outliers exist in these attributes of the data
+```
+
+```{r}
+
+# Spearman Correlation should be weaker since there are outliers in the data
+# Kendall Correlation should be weaker since most of the attributes are not dependent upon each other.
+
+par(mfrow=c(2,2))
+corrplot(cor(df, method=c("spearman")), title="Spearman",mar=c(0,0,2,0), type="lower", tl.pos="n", cl.pos="n", method="square", order="FPC")
+corrplot(cor(df, method=c("pearson")), title="Pearson", mar=c(0,0,2,0), type="lower", tl.pos="n", cl.pos="n", method="square", order="FPC")
+corrplot(cor(df, method=c("kendall")), title="Kendall", mar=c(0,0,2,0), type="lower", tl.pos="n", cl.pos="n", method="square", order="FPC")
+
+par(mfrow=c(1,1))
+
+# As expected, the strength of the correlation in Pearson is slightly better than Spearman and Kendall
+
+```
+
+```{r}
+# Spearman is our desired correlation method
+
+corrplot(cor(df, method=c("spearman")), type="lower", method="square", order="FPC")
+```
+
+```{r}
+
+# Viewing the Age/Output Distribution
+ggplot(data=df, aes(x=age, fill=output, group=output)) +
+        geom_histogram(position="stack")
+
+
+# Ages 30-50 has a high chance of heart attack
+# Ages 50-70 had a 0.5 chance on average
+```
+
+
+```{r}
+
+# Viewing the Gender/Output Distribution
+
+ggplot(data = df, aes(x = sex, fill=output, group=output)) +
+       geom_histogram(stat="count") +
+       ggtitle("Gender Survival Rate Distribution")
+
+# People with sex = 0 had a high chance of heart attack
+# People with sex = 1 had a 0.5 chance on average
+```
+
+
+```{r}
+
+# Viewing the (Chest Pain)/Output Distribution
+ggplot(data=df, aes(x=cp, fill=output, group=output)) +
+        geom_histogram(stat="count")
+
+# Chest Pain Type 1,2,3 had a high chance of heart attack
+# Chest Pain Type 0 had a lower than 0.5 chance
+```
+
+```{r}
+
+# Viewing the (Resting Electrocardiographic Results)/Output Distribution
+
+ggplot(data=df, aes(x=restecg, fill=output, group = output)) +
+        geom_histogram(stat="count")
+
+# Type 1 had a high chance of heart attack
+# Type 0 had a 0.5 chance
+# Type 2 had a low chance of heart attack
+```
+
+```{r}
+
+# Viewing the (Exercise Induced Angina)/Output Distribution
+
+ggplot(data=df, aes(x=exng, fill=output, group = output)) +
+        geom_histogram(stat="count")
+
+# Type 0 had around a 75% chance
+# Type 1 had around a 25% chance
+```
+
+```{r}
+
+# Viewing the (Number of Major Vessels)/Output Distribution
+
+ggplot(data=df, aes(x=caa, fill=output, group = output)) +
+        geom_histogram(stat="count")
+
+# Type 1,2,3 had a low chance
+# Type 4 had a very high chance
+# Type 0 had around a 75% chance
+```
+
+```{r}
+
+# Viewing the (Fasting Blood Sugar > 120)/Output Distribution
+
+ggplot(data=df, aes(x=fbs, fill=output, group = output)) +
+        geom_histogram(stat="count")
+
+# Both types have a 50% chance
+# This attribute is not very useful in classification
+```
+
+```{r}
+
+# Viewing the (Resting Blood Pressure)/Output Distribution
+
+ggplot(data=df, aes(x=trtbps, fill=output, group=output)) +
+        geom_density(alpha=0.6)
+
+# Mostly equal in terms of values of 1.0 and 0
+# At Blood Pressure of higher than 190, the chance of heart attack decreases
+```
+
+```{r}
+
+# Viewing the (Maximum Heart Rate Achieved)/Output Distribution
+
+ggplot(data=df, aes(x=thalachh, fill=output, group=output)) +
+        geom_density(alpha=0.6)
+
+# Left end of the spectrum had lower chance
+# Chance increases drastically at 150
+```
+
+```{r}
+
+# Viewing the Output Distribution
+
+ggplot(data=df, aes(x=output)) +
+        geom_histogram(position="stack", binwidth=1, color="black", size=2)
+
+# We have slightly more values for 1.0 than 0.0 so we will need to sample properly
+```

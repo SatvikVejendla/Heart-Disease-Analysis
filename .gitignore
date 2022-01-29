@@ -1,0 +1,8 @@
+env/
+
+__pycache__
+
+data/final/xs.npy
+data/final/ys.npy
+data/cleaned.csv
+data/heart.csv
